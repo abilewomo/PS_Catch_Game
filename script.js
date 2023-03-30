@@ -1,94 +1,130 @@
 //Define Game class
 class Game {
   constructor(canvas) {
+    this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
   }
-  startGame() {}
-  reset() {
-    const ctx = this.ctx;
-    ctx.font = "30px Arial";
-    ctx.fillText("Start", 180, 180);
-  }
-  // clear(canvas){
-  //     const ctx = this.ctx
-  //     ctx.clearRect(0, 0, canvas.width, canvas.height)
+  start() {}
+  // reset() {
+  //   const ctx = this.ctx;
+  //   ctx.font = "30px Arial";
+  //   ctx.fillText("Start", 180, 180);
   // }
-  update() {
-    const ctx = this.ctx;
+  clear() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+  update(newPlayer, newObject, check) {
+    
+    this.clear();
+    if(check === true){
+      newPlayer.draw();
+    }else{
+    newObject.draw();
+    newPlayer.draw();
+  }
   }
 }
 
-//Define Player class
+//Define Player class - Player is a sqauare bowl
 class Player {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.xposition = 0;
-    this.yposition = 560;
-    this.draw();
-	window.addEventListener('keydown', (event) => this.move(event));
+    this.width = 80; //player width
+    this.height = 40; //player height
+    this.xposition = 0; // x position
+    this.yposition = 560; //y position
+    this.color = "blue";
+
+    //add event listener to move player everytime the left and right arrows are pressed
+    window.addEventListener("keydown", (event) => this.move(event));
   }
 
   draw() {
     const ctx = this.ctx;
-    ctx.fillStyle = "blue";
 
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillRect(this.xposition , this.yposition, 80, 40);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.xposition, this.yposition, this.width, this.height);
   }
+
+  //Define move method to move player in response to left and right arrow key press
   move(event) {
     if (event.key === "ArrowLeft" && this.xposition > 0) {
       // Left arrow
       this.xposition -= 10;
-    }else if (event.key === "ArrowRight" && this.xposition < 700) {
+    } else if (event.key === "ArrowRight" && this.xposition < this.canvas.width - this.width) {
       // Right arrow
       this.xposition += 10;
-    }else if (event.key === "ArrowUp") { // Up arrow
-        this.yposition -= 10;
-    } else if (event.key === "ArrowDown") { // Down arrow
-        this.yposition += 10;
     }
-
     this.draw();
   }
 }
 
-//Define Objects class
+//Define Objects class - objects are falling circles
 class Objects {
   constructor(canvas) {
     this.ctx = canvas.getContext("2d");
+    this.xposition = 25; //x position
+    this.yposition = 25; //y position
+    this.start = 0; //start angle in radian
+    this.end = 2 * Math.PI; //end angle in radian
+    this.radius = 20; //radius
+    this.color = "red";
+    this.dy = 2 //change y direction by this value to create a motion effect
   }
   draw() {
     const ctx = this.ctx;
     ctx.beginPath();
-    ctx.arc(25, 25, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
+    ctx.arc(this.xposition, this.yposition, this.radius, this.start, this.end);
+    ctx.fillStyle = this.color;
     ctx.fill();
+    ctx.closePath();
+    this.yposition += 1;
+  }
+  collisionCheck(paddleX, paddleY, paddleWidth, paddleHeight){
+ 
+    if (this.yposition + this.dy >= canvas.height - 2*this.radius) {
+      if(this.xposition >= paddleX && this.xposition  <= paddleX + paddleWidth && this.yposition){
+        return true
+      }else{
+        return false
+      }
+    }else{
+      return false
+    }
   }
 }
 
 class objectFactory {
-  objects = [];
+  constructor(){
+    this.objectsArray = [];
+  }
+
+  generateObjects(){
+     let newObjects = new Objects(canvas)
+     let objects = newObjects.draw()
+     this.objectsArray.push(objects)
+     return this.objectsArray
+  }
+ 
+
 }
+
 //Variable declaration
 const canvas = document.querySelector("#canvas");
 
 let newGame = new Game(canvas);
+
 let newPlayer = new Player(canvas);
 let newObject = new Objects(canvas);
-newPlayer.draw();
-//newObject.draw();
+//console.log(newObject)
+function gameLoop() {
+  requestAnimationFrame(gameLoop);
+let check = newObject.collisionCheck(newPlayer.xposition, newPlayer.yposition, newPlayer.width, newPlayer.height)
+ 
+  newGame.clear();
+  newGame.update(newPlayer, newObject, check);
+  
+}
 
-//document.addEventListener("load", newGame.reset());
-//window.addEventListener("keydown", newPlayer.move);
-
-//
-// STEPS
-// 1. create objects that fall randomly
-// 2. create a container to catch the falling objects
-// 3. Player should get to high score to move to the next level
-// 4. some levels should have objects that should be avoided
-// 5. some levels should have faster moving objects
-// 6. Game is won when all levels are passed
-// 7. add a counter
-// 8. add sound
+gameLoop();
