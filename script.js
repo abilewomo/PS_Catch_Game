@@ -3,25 +3,42 @@ class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    this.interval = "";
+    this.frameNo = 0;
+    this.score = 0
   }
-  start() {}
-  // reset() {
-  //   const ctx = this.ctx;
-  //   ctx.font = "30px Arial";
-  //   ctx.fillText("Start", 180, 180);
-  // }
+
   clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
-  update(newPlayer, newObject, check) {
-    
-    this.clear();
-    if(check === true){
-      newPlayer.draw();
-    }else{
-    newObject.draw();
-    newPlayer.draw();
+  everyinterval(n) {
+    if ((this.frameNo / n) % 1 == 0) {
+      return true;
+    }
+    return false;
   }
+  update(newPlayer, fallingObjects) {
+    
+    for (let i = 0; i < fallingObjects.length; i += 1) {
+      if (newPlayer.collisionCheck(fallingObjects[i])) {
+        fallingObjects.splice(i, 1);
+        this.score++
+      }
+    }
+    this.clear();
+    this.frameNo += 1;
+        if (this.frameNo == 1 || this.everyinterval(100)) {
+          fallingObjects.push(new Objects(this.canvas));
+    //newPlayer.draw();
+        }
+        for (let i = 0; i < fallingObjects.length; i += 1) {
+          fallingObjects[i].yposition += 1;
+          fallingObjects[i].draw();
+        }
+        newPlayer.draw();
+        const ctx = canvas.getContext("2d");
+ctx.font = "20px Arial";
+ctx.fillText(`Score:${this.score}`, 2, 20);
   }
 }
 
@@ -37,7 +54,7 @@ class Player {
     this.color = "blue";
 
     //add event listener to move player everytime the left and right arrows are pressed
-    window.addEventListener("keydown", (event) => this.move(event));
+    window.addEventListener("keydown", (e) => this.move(e));
   }
 
   draw() {
@@ -46,13 +63,35 @@ class Player {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.xposition, this.yposition, this.width, this.height);
   }
+  collisionCheck(object) {
+    var myleft = this.xposition;
+    var myright = this.xposition + this.width;
+    var mytop = this.yposition;
+    var mybottom = this.yposition + this.height;
+    var otherleft = object.xposition - object.radius;
+    var otherright = object.xposition + object.radius;
+    var othertop = object.yposition;
+    var otherbottom = object.yposition + object.radius;
+    
+    var crash = true;
+    if ( mybottom < othertop || mytop > otherbottom ||  myright < otherleft ||  myleft > otherright
+    ) {
+      crash = false;
+    }
+    return crash;
+  
+
+  }
 
   //Define move method to move player in response to left and right arrow key press
-  move(event) {
-    if (event.key === "ArrowLeft" && this.xposition > 0) {
+  move(e) {
+    if (e.key === "ArrowLeft" && this.xposition > 0) {
       // Left arrow
       this.xposition -= 10;
-    } else if (event.key === "ArrowRight" && this.xposition < this.canvas.width - this.width) {
+    } else if (
+      e.key === "ArrowRight" &&
+      this.xposition < this.canvas.width - this.width
+    ) {
       // Right arrow
       this.xposition += 10;
     }
@@ -60,17 +99,17 @@ class Player {
   }
 }
 
-//Define Objects class - objects are falling circles
+//Define Objects class 
 class Objects {
   constructor(canvas) {
     this.ctx = canvas.getContext("2d");
-    this.xposition = 25; //x position
+    this.xposition = Math.floor(Math.random() * canvas.width); //random x position
     this.yposition = 25; //y position
     this.start = 0; //start angle in radian
     this.end = 2 * Math.PI; //end angle in radian
     this.radius = 20; //radius
     this.color = "red";
-    this.dy = 2 //change y direction by this value to create a motion effect
+    this.dy = 2; //change y direction by this value to create a motion effect
   }
   draw() {
     const ctx = this.ctx;
@@ -81,50 +120,22 @@ class Objects {
     ctx.closePath();
     this.yposition += 1;
   }
-  collisionCheck(paddleX, paddleY, paddleWidth, paddleHeight){
- 
-    if (this.yposition + this.dy >= canvas.height - 2*this.radius) {
-      if(this.xposition >= paddleX && this.xposition  <= paddleX + paddleWidth && this.yposition){
-        return true
-      }else{
-        return false
-      }
-    }else{
-      return false
-    }
-  }
-}
 
-class objectFactory {
-  constructor(){
-    this.objectsArray = [];
-  }
-
-  generateObjects(){
-     let newObjects = new Objects(canvas)
-     let objects = newObjects.draw()
-     this.objectsArray.push(objects)
-     return this.objectsArray
-  }
- 
 
 }
+
+
 
 //Variable declaration
-const canvas = document.querySelector("#canvas");
+let canvas = document.querySelector("#canvas");
 
 let newGame = new Game(canvas);
-
+let fallingObjects = [];
 let newPlayer = new Player(canvas);
-let newObject = new Objects(canvas);
-//console.log(newObject)
+
 function gameLoop() {
   requestAnimationFrame(gameLoop);
-let check = newObject.collisionCheck(newPlayer.xposition, newPlayer.yposition, newPlayer.width, newPlayer.height)
- 
-  newGame.clear();
-  newGame.update(newPlayer, newObject, check);
-  
+  newGame.interval = setInterval(newGame.update(newPlayer, fallingObjects), 2000);
 }
 
 gameLoop();
