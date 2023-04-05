@@ -53,14 +53,19 @@ class Game {
 
     ctx.font = "14px Arial";
     ctx.fillText("Catch 20 balls before time runs out", 550, 50)
-    if (this.time === 0 && this.score < 20) {
+    if (this.time === 0 && this.score < 3) {
       this.msg = "Game Over"
       this.scoreIncreament = 0
-
-      return false
-    }
+      this.end(this.msg)
+      return
+    }else if (this.time >= 0 && this.score >= 3) {
+        this.msg = "You win"
+        this.scoreIncreament = 0
+        this.end(this.msg)
+        return
+      }
     this.time -= 1000;
-    return true
+   
 
   }
   end(msg) {
@@ -68,7 +73,6 @@ class Game {
     this.ctx.font = "20px Arial";
     this.ctx.fillText(msg, 350, 300);
 
-    return
   }
 
 }
