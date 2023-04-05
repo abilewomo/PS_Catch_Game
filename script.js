@@ -77,6 +77,7 @@ class Game {
       this.level += 1;
       this.speed += 2;
       this.colors.push("#ff0000", "#ff0000");
+      document.querySelector("#canvas").style.backgroundColor = "#b19cd9"
     } else if (
       (this.time === 0 && this.score < 5 && this.level == 1) ||
       (this.time === 0 && this.score < 3 && this.level > 1)
@@ -92,6 +93,7 @@ class Game {
       this.level += 1;
       this.speed += 2;
       this.colors.push("#ff0000");
+      document.querySelector("#canvas").style.backgroundColor = "#facc08"
     }
 
     this.time -= 1000;
@@ -195,9 +197,11 @@ class Objects {
 //end class definitions
 
 let startBtn = document.querySelector("#startBtn");
+let text = document.querySelector("#text")
 
 startBtn.addEventListener("click", (e) => {
   startBtn.remove();
+  text.remove()
   let canvas = document.createElement("canvas");
   canvas.setAttribute("id", "canvas");
   canvas.width = "800";

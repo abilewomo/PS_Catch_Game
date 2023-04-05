@@ -31,3 +31,12 @@ canvas {
 #restartBtn{
     display: none;
 }
+#text{
+    position: relative;
+    width: 500px;
+    top: 300px;
+    font-size: 20px;
+    text-align: left;
+    background-color: white;
+    padding: 20px;
+}
