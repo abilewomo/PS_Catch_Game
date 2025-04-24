@@ -16,6 +16,13 @@ const explosivesPath = [
     "./assets/images/explosives/dynamite.png",
     "./assets/images/explosives/tnt.png",
 ];
+//Sound effects for the game
+const soundEffects = {
+    fruit: new Audio("./assets/sounds/fruit.mp3"),
+    explosive: new Audio("./assets/sounds/explosion.mp3"),
+    gameOver: new Audio("./assets/sounds/game-over.mp3"),
+    background: new Audio("./assets/sounds/drum-loop.mp3"),
+};
 let canvas = document.getElementById("gameCanvas");
 let ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -29,6 +36,9 @@ let gameInterval;
 //Define function to initialize the game
 export async function initGame() {
     canvas.style.display = "block"; // Show the canvas
+    canvas.style.margin = "0 auto"; // Center the canvas on the page
+    soundEffects.background.loop = true; // Loop the background music
+    soundEffects.background.play(); // Play the background music
     try {
         const fruitImages = await Promise.all(fruitsPath.map(preloadImages));
         const explosiveImages = await Promise.all(explosivesPath.map(preloadImages));
@@ -88,6 +98,7 @@ function updateGame(fruitImages, explosiveImages) {
         // Check for collision with the paddle
         if (isColliding(object, paddle)) {
             score += object.type === "fruit" ? 10 : -5; // Increase/decrease score as appropriate
+            soundEffects[object.type].play(); // Play sound effect based on object type
             fallingObjects.splice(i, 1); // Remove the object after collision
             continue; // Skip to the next iteration
         }
@@ -100,9 +111,12 @@ function updateGame(fruitImages, explosiveImages) {
     drawScore(); // Draw the score on the canvas
 
 
-    // Display game over message if score is negative
+    // Display game over message if score is 0 or less
     if (score < 0) {
+        score = 0; // Reset score to 0
         displayGameOver();
+        soundEffects.gameOver.play(); // Play game over sound
+        soundEffects.background.pause(); // Pause background music
         clearInterval(gameInterval); // Stop the game loop
         return;
     }
